@@ -44,20 +44,23 @@ This project delivers a non-invasive, vision-based estimation framework that ope
 ### End-to-End Pipeline Workflow
 
 ```mermaid
-graph TD
-    subgraph Data Layer ["Dataset (5,351 Images, 5 Classes)"]
-        D1[YoungBud] & D2[MatureBud] & D3[EarlyBloom] & D4[Healthy] & D5[Wilted]
+flowchart TD
+    subgraph DataLayer ["Dataset Layer (5,351 Images, 5 Classes)"]
+        direction TB
+        D_ALL["5 Developmental Stages<br/>(YoungBud, MatureBud, EarlyBloom, Healthy, Wilted)"]
     end
 
     subgraph Phase1 ["Phase 1: Classical Vision & Feature Engineering"]
+        direction TB
         P1["Color Space Conversion (Lab) + CLAHE + Bilateral Denoising"]
         P2["Dual Segmentation: GrabCut (Foreground) + K-Means (Disc Extraction)"]
-        P3["35 Handcrafted Features (4 Shape + 3 Disc + 24 HSV Hist + 4 GLCM)"]
+        P3["35 Handcrafted Features<br/>(4 Shape, 3 Disc, 24 HSV Hist, 4 GLCM)"]
         P4["Transparent Rule-Based PDI Proxy (Low / Medium / High)"]
         P5["Classical Classification: Random Forest & SVM (RBF)"]
     end
 
     subgraph Phase2 ["Phase 2: Quantum-Classical Hybrid Classifier"]
+        direction TB
         Q1["Stratified Subsampling (Balanced N=220 Binary Task)"]
         Q2["StandardScaler + 6-Component PCA Projection"]
         Q3["6-Qubit State Preparation (RY Angle Encoding)"]
@@ -67,7 +70,7 @@ graph TD
         Q7["Noise Robustness Analysis (Depolarizing Noise, default.mixed)"]
     end
 
-    Data Layer --> P1
+    D_ALL --> P1
     P1 --> P2
     P2 --> P3
     P3 --> P4
