@@ -5,7 +5,12 @@
 Iterative neural backpropagation showing live epoch progress, loss, and validation accuracy.
 """
 
-import sys, time
+import os, sys, time
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+os.chdir(ROOT_DIR)
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -19,9 +24,11 @@ def main():
     print("="*65)
 
     df = pd.read_csv("artifacts/features/phase1_features.csv")
-    from src.pdi.rules import pdi_score
-    df["pdi_score"] = df.apply(pdi_score, axis=1)
-    df["pdi_label"] = pd.cut(df["pdi_score"], bins=[-1, 35, 65, 101], labels=["Low", "Medium", "High"])
+    from src.pdi.rules import pdi_proxy_label
+    df["pdi_label"] = [
+        pdi_proxy_label(d, s, v, c)
+        for d, s, v, c in zip(df["disc_ratio"], df["sat_mean"], df["val_mean"], df["circularity"])
+    ]
 
     SCORE_FEATURES = {"disc_ratio", "sat_mean", "val_mean", "circularity"}
     EXCLUDE = {"path", "class", "pdi_score", "pdi_label"} | SCORE_FEATURES
