@@ -1,0 +1,11 @@
+dataset_dir: "../Sunflower Compressed"
+classes:
+  - YoungBud
+  - MatureBud
+  - EarlyBloom
+  - Healthy
+  - Wilted
+artifacts_dir: "artifacts"
+data_dir: "data"
+models_dir: "models"
+random_seed: 42

@@ -1,0 +1,28 @@
+sample_size_per_class: 300
+total_samples: 1500
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+preprocessing:
+  resize: 200
+  clahe_clip: 2.5
+  clahe_tile: 8
+  denoise_d: 7
+  denoise_sigma_color: 60
+  denoise_sigma_space: 60
+segmentation:
+  grabcut_margin: 0.10
+  grabcut_iters: 4
+  kmeans_k: 3
+features:
+  histogram_bins: 8
+  glcm_distances: [1]
+  glcm_angles: [0, 0.7853981633974483, 1.5707963267948966, 2.356194490192345] # 0, pi/4, pi/2, 3pi/4
+  glcm_levels: 8
+random_forest:
+  n_estimators: 300
+svm:
+  kernel: rbf
+  C: 5.0
+  gamma: scale

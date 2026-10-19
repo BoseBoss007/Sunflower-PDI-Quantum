@@ -1,0 +1,15 @@
+{
+    "dataset_root": "../Sunflower Compressed",
+    "classes_found": {
+        "YoungBud": 1025,
+        "MatureBud": 1008,
+        "EarlyBloom": 1078,
+        "Healthy": 1202,
+        "Wilted": 1037
+    },
+    "total_images": 5350,
+    "unreadable_images": [],
+    "extensions_found": {
+        ".jpg": 5350
+    }
+}

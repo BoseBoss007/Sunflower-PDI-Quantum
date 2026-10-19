@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+*.dylib
+
+# Virtual Environments
+venv/
+*/venv/
+.venv/
+*/.venv/
+env/
+*/env/
+ENV/
+env.bak/
+venv.bak/
+
+# macOS files
+.DS_Store
+*/.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+sunflower-pdi/artifacts/logs/*.log

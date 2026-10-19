@@ -1,0 +1,8 @@
+opencv-python
+scikit-image
+numpy<2.0
+pandas
+scikit-learn
+PennyLane
+matplotlib
+PyYAML

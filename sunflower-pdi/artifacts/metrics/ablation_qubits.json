@@ -1,0 +1,17 @@
+[
+  {
+    "n_components": 2,
+    "explained_variance": 0.5483029649032141,
+    "classical_svm_acc_same_dims": 1.0
+  },
+  {
+    "n_components": 4,
+    "explained_variance": 0.7089841739529024,
+    "classical_svm_acc_same_dims": 1.0
+  },
+  {
+    "n_components": 6,
+    "explained_variance": 0.8061761831807652,
+    "classical_svm_acc_same_dims": 1.0
+  }
+]
