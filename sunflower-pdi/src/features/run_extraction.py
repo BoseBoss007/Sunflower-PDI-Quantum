@@ -51,7 +51,7 @@ def run_extraction(base_config_path, phase1_config_path):
         
         disc_ratio, sat_mean, val_mean = disc_color_features(proc, fg, disc)
         
-        label = pdi_proxy_label(cls, disc_ratio, shape['area_ratio'], sat_mean)
+        label = pdi_proxy_label(disc_ratio, sat_mean, val_mean, shape['circularity'])
         
         feat_row = {
             "path": path, "class": cls,
