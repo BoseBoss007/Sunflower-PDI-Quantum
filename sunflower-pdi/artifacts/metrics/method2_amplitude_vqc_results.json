@@ -1,0 +1,24 @@
+{
+  "method": "Method 2: Quantum Amplitude-Encoded VQC (Zero PCA)",
+  "feature_variance": 1.0,
+  "raw_features": 31,
+  "test_acc": 0.8484848484848485,
+  "macro_f1": 0.8484848484848485,
+  "precision": 0.8492647058823529,
+  "recall": 0.8492647058823529,
+  "roc_auc": 0.9522058823529411,
+  "mcc": 0.6985294117647058,
+  "confusion_matrix": [
+    [
+      14,
+      3
+    ],
+    [
+      2,
+      14
+    ]
+  ],
+  "n_qubits": 6,
+  "n_layers": 3,
+  "n_params": 38
+}

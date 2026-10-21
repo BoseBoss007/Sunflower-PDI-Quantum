@@ -182,7 +182,32 @@ def main():
     print(f"                 Pred Low   Pred High")
     print(f"  Actual Low  :     {cm[0,0]:4d}         {cm[0,1]:4d}")
     print(f"  Actual High :     {cm[1,0]:4d}         {cm[1,1]:4d}")
-    print("="*65 + "\n")
+    print("="*65)
+
+    # Save results and parameters for comparison
+    import json
+    os.makedirs("artifacts/metrics", exist_ok=True)
+    os.makedirs("models/quantum", exist_ok=True)
+
+    results_m1 = {
+        "method": "Method 1: PCA + Angle-Encoded VQC",
+        "pca_variance": float(pca.explained_variance_ratio_.sum()),
+        "test_acc": float(te_acc),
+        "macro_f1": float(te_f1),
+        "precision": float(te_prec),
+        "recall": float(te_rec),
+        "roc_auc": float(te_auc),
+        "mcc": float(te_mcc),
+        "confusion_matrix": cm.tolist(),
+        "n_qubits": N_QUBITS,
+        "n_layers": N_LAYERS,
+        "n_params": N_LAYERS * N_QUBITS * 2 + 2
+    }
+    with open("artifacts/metrics/method1_angle_vqc_results.json", "w") as f:
+        json.dump(results_m1, f, indent=2)
+    np.savez("models/quantum/method1_angle_vqc_parameters.npz", weights=w_best, bias=b_best, scale=s_best)
+    print("  [Saved] Results -> artifacts/metrics/method1_angle_vqc_results.json")
+    print("  [Saved] Weights -> models/quantum/method1_angle_vqc_parameters.npz\n")
 
 if __name__ == "__main__":
     main()
