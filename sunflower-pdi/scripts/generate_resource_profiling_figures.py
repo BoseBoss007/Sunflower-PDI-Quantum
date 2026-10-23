@@ -562,32 +562,28 @@ def plot_time_space_tradeoffs(results):
 # =====================================================================
 # FIGURE 2: RADAR PROFILING & ASYMPTOTIC COMPLEXITY TABLE
 # =====================================================================
-def plot_radar_and_complexity_matrix(results):
-    print("\n" + "="*70)
-    print("  GENERATING FIGURE 2: MULTI-CRITERIA RADAR & ASYMPTOTIC TABLE")
-    print("="*70)
+# =====================================================================
+# SEPARATE STANDALONE FIGURES FOR PUBLICATION (HIGH READABILITY)
+# =====================================================================
 
-    fig = plt.figure(figsize=(16, 9.8))
-    gs = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85], width_ratios=[0.85, 1.35],
-                          top=0.91, bottom=0.07, left=0.05, right=0.97, hspace=0.32, wspace=0.22)
-
-    # ─────────────────────────────────────────────────────────────────
-    # Panel A: Radar / Spider Multi-Criteria Performance Chart (Top-Left)
-    # ─────────────────────────────────────────────────────────────────
-    ax_radar = fig.add_subplot(gs[0, 0], polar=True)
+def plot_radar_standalone(results):
+    """Figure 1: Standalone Multi-Criteria Architectural Efficiency Radar"""
+    print("\n  [1/4] Generating Standalone Radar Efficiency Chart...")
+    fig = plt.figure(figsize=(8.5, 8.0))
+    ax = fig.add_subplot(1, 1, 1, polar=True)
 
     categories = [
         "Classification\nAccuracy",
-        "Storage\nEfficiency",
-        "Parameter\nParsimony",
-        "Training\nSpeed",
-        "Inference\nThroughput"
+        "Storage\nEfficiency\n(1/KB)",
+        "Parameter\nParsimony\n(1/Params)",
+        "Training\nSpeed\n(1/Time)",
+        "Inference\nThroughput\n(1/Latency)"
     ]
     N = len(categories)
     angles = [n / float(N) * 2 * np.pi for n in range(N)]
     angles += angles[:1]
 
-    # Normalize metrics to [0.15, 1.0] scale
+    # Metrics normalization
     accs = [r["test_acc"] for r in results]
     sizes = [1.0 / r["size_kb"] for r in results]
     params = [1.0 / np.log10(max(r["params"], 2)) for r in results]
@@ -605,32 +601,46 @@ def plot_radar_and_complexity_matrix(results):
     norm_lat_speeds = normalize(lat_speeds)
 
     selected = [
-        ("Random Forest", "Random Forest", "#ef4444", "--"),
-        ("SVM (RBF Kernel)", "Support Vector", "#10b981", "-."),
-        ("Neural Net (MLP)", "Multi-Layer", "#8b5cf6", ":"),
-        ("Method 2 (Amplitude VQC)", "Amplitude", "#059669", "-")
+        ("Random Forest (150 Trees)", "Random Forest", "#ef4444", "--", "s"),
+        ("SVM (RBF Kernel)", "Support Vector", "#10b981", "-.", "^"),
+        ("Neural Net (MLP 64-32)", "Multi-Layer", "#8b5cf6", ":", "o"),
+        ("Method 2 (Amplitude VQC)", "Amplitude", "#059669", "-", "D")
     ]
 
-    for model_name, kw, col, lstyle in selected:
+    for model_name, kw, col, lstyle, marker in selected:
         idx = next(i for i, r in enumerate(results) if kw in r["full_name"])
         vals = [norm_accs[idx], norm_sizes[idx], norm_params[idx], norm_t_speeds[idx], norm_lat_speeds[idx]]
         vals += vals[:1]
-        lw = 2.4 if "Amplitude" in model_name else 1.8
-        alpha = 0.22 if "Amplitude" in model_name else 0.06
-        ax_radar.plot(angles, vals, color=col, linewidth=lw, linestyle=lstyle, label=model_name)
-        ax_radar.fill(angles, vals, color=col, alpha=alpha)
+        lw = 2.8 if "Amplitude" in model_name else 2.0
+        alpha = 0.25 if "Amplitude" in model_name else 0.07
+        ax.plot(angles, vals, color=col, linewidth=lw, linestyle=lstyle, marker=marker, markersize=6, label=model_name)
+        ax.fill(angles, vals, color=col, alpha=alpha)
 
-    ax_radar.set_xticks(angles[:-1])
-    ax_radar.set_xticklabels(categories, fontsize=8.5, fontweight="bold")
-    ax_radar.set_ylim(0, 1.05)
-    ax_radar.set_title("(a) Multi-Criteria Architectural Efficiency Radar", fontweight="bold", pad=12, fontsize=10.5)
-    ax_radar.legend(loc="upper center", bbox_to_anchor=(0.5, -0.10), ncol=2, fontsize=8.0, framealpha=0.95)
+    ax.set_xticks(angles[:-1])
+    ax.tick_params(axis="x", pad=16)
+    ax.set_xticklabels(categories, fontsize=10.5, fontweight="bold")
+    ax.set_ylim(0, 1.05)
+    ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
+    ax.set_yticklabels(["0.2", "0.4", "0.6", "0.8", "1.0"], fontsize=8.5, color="#64748b")
+    ax.set_rlabel_position(36)
+    ax.set_title("Multi-Criteria Architectural Efficiency: Classical vs. Quantum Models",
+                 fontweight="bold", pad=24, fontsize=12)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=2, fontsize=9.5, framealpha=0.95)
 
-    # ─────────────────────────────────────────────────────────────────
-    # Panel B: Asymptotic & Empirical Complexity Table (Top-Right)
-    # ─────────────────────────────────────────────────────────────────
-    ax_tab = fig.add_subplot(gs[0, 1])
-    ax_tab.axis("off")
+    fig_png = f"{OUT_DIR}/eval_radar_architectural_efficiency.png"
+    fig_pdf = f"{OUT_DIR}/eval_radar_architectural_efficiency.pdf"
+    plt.savefig(fig_png, dpi=300, bbox_inches="tight")
+    plt.savefig(fig_pdf, bbox_inches="tight")
+    plt.close()
+    print(f"  [Saved] {fig_png} and .pdf")
+
+
+def plot_table_standalone(results):
+    """Figure 2: Standalone Complexity & Empirical Metrics Table"""
+    print("\n  [2/4] Generating Standalone Empirical Complexity Table...")
+    fig = plt.figure(figsize=(14.0, 3.4))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis("off")
 
     table_data = [
         ["Model Architecture", "Parameters", "Disk Storage", "Train Time", "Latency", "Test Acc", "Space Complexity"],
@@ -646,6 +656,16 @@ def plot_radar_and_complexity_matrix(results):
         "Method 2: Amplitude-Encoded VQC (Hilbert 64-D)": "Method 2: Amplitude VQC (64-D)"
     }
 
+    clean_complexity = {
+        "Logistic Regression (SGD)": r"$\mathcal{O}(D)$",
+        "Support Vector Machine (RBF)": r"$\mathcal{O}(N_{sv} \cdot D)$",
+        "Random Forest Ensemble (150 Trees)": r"$\mathcal{O}(T \cdot \mathrm{Nodes})$",
+        "XGBoost Gradient Boosting": r"$\mathcal{O}(T \cdot \mathrm{Depth})$",
+        "Multi-Layer Perceptron (64-32)": r"$\mathcal{O}(H_1 \cdot H_2)$",
+        "Method 1: Angle-Encoded VQC (PCA 6-D)": r"$\mathcal{O}(n)\ \mathrm{Qubits}$",
+        "Method 2: Amplitude-Encoded VQC (Hilbert 64-D)": r"$\mathcal{O}(\log_2 D)\ \mathrm{Qubits}$"
+    }
+
     for r in results:
         disp_name = clean_names.get(r["full_name"], r["full_name"])
         p_str = f"{r['params']:,}"
@@ -653,29 +673,30 @@ def plot_radar_and_complexity_matrix(results):
         t_str = f"{r['train_time_s']*1000:.0f} ms" if r['train_time_s'] < 1.0 else f"{r['train_time_s']:.2f} s"
         l_str = f"{r['latency_ms']:.2f} ms"
         a_str = f"{r['test_acc']:.2f}%"
+        comp_str = clean_complexity.get(r["full_name"], r["complexity_space"])
         table_data.append([
-            disp_name, p_str, s_str, t_str, l_str, a_str, r["complexity_space"]
+            disp_name, p_str, s_str, t_str, l_str, a_str, comp_str
         ])
 
     col_widths = [0.26, 0.10, 0.12, 0.12, 0.13, 0.11, 0.16]
 
-    table = ax_tab.table(
+    table = ax.table(
         cellText=table_data,
         cellLoc="center",
         loc="center",
         colWidths=col_widths
     )
     table.auto_set_font_size(False)
-    table.set_fontsize(8.5)
+    table.set_fontsize(9.5)
     table.scale(1.0, 1.85)
 
     m2_row_idx = len(table_data) - 1
     for (row_idx, col_idx), cell in table.get_celld().items():
-        cell.set_edgecolor("#cbd5e1")
-        cell.set_linewidth(0.8)
+        cell.set_edgecolor("#94a3b8")
+        cell.set_linewidth(0.9)
         if row_idx == 0:
-            cell.set_facecolor("#1e293b")
-            cell.set_text_props(color="white", weight="bold")
+            cell.set_facecolor("#0f172a")
+            cell.set_text_props(color="white", weight="bold", fontsize=10)
         elif row_idx == m2_row_idx:
             cell.set_facecolor("#ecfdf5")
             cell.set_text_props(color="#065f46", weight="bold")
@@ -687,61 +708,107 @@ def plot_radar_and_complexity_matrix(results):
         else:
             cell.set_facecolor("#ffffff")
 
-    ax_tab.set_title("(b) Empirical Time, Space, and Asymptotic Complexity Benchmark", fontweight="bold", pad=12, fontsize=10.5)
+    ax.set_title("Empirical Resource Profiling & Asymptotic Computational Complexity Benchmark",
+                 fontweight="bold", pad=14, fontsize=12)
 
-    # ─────────────────────────────────────────────────────────────────
-    # Panel C: Parameter Parsimony & Storage Compression Ratio (Bottom-Left)
-    # ─────────────────────────────────────────────────────────────────
-    ax_bar = fig.add_subplot(gs[1, 0])
-    model_labels = ["LR", "SVM", "RF", "XGB", "MLP", "VQC M1", "VQC M2"]
+    fig_png = f"{OUT_DIR}/eval_complexity_benchmark_table.png"
+    fig_pdf = f"{OUT_DIR}/eval_complexity_benchmark_table.pdf"
+    plt.savefig(fig_png, dpi=300, bbox_inches="tight")
+    plt.savefig(fig_pdf, bbox_inches="tight")
+    plt.close()
+    print(f"  [Saved] {fig_png} and .pdf")
+
+
+def plot_parameter_parsimony_standalone(results):
+    """Figure 3: Standalone Trainable Parameter Count & Parsimony Scaling"""
+    print("\n  [3/4] Generating Standalone Parameter Parsimony Bar Chart...")
+    fig, ax = plt.subplots(figsize=(10.5, 5.5))
+
+    model_labels = [
+        "Logistic\nRegression", "SVM\n(RBF)", "Random\nForest",
+        "XGBoost\nTrees", "Neural Net\n(MLP)", "Angle VQC\n(Method 1)", "Amplitude VQC\n(Method 2)"
+    ]
     param_counts = [r["params"] for r in results]
     bar_colors = [r["color"] for r in results]
 
-    bars = ax_bar.bar(model_labels, param_counts, color=bar_colors, width=0.55, edgecolor="#1e293b", linewidth=0.9)
-    ax_bar.set_yscale("log")
-    ax_bar.set_ylabel("Trainable Parameters (Log Scale)", fontsize=9.5)
-    ax_bar.set_title("(c) Trainable Parameter Count & Parsimony Scaling", fontweight="bold", pad=8, fontsize=10.5)
-    ax_bar.grid(True, axis="y")
+    bars = ax.bar(model_labels, param_counts, color=bar_colors, width=0.52, edgecolor="#0f172a", linewidth=1.1)
+    ax.set_yscale("log")
+    ax.set_ylabel("Number of Trainable Parameters (Logarithmic Scale)", fontsize=11, fontweight="bold")
+    ax.set_title("Trainable Parameter Parsimony: Extreme Dimensional Compression in Quantum Circuits",
+                 fontweight="bold", pad=14, fontsize=12)
+    ax.grid(True, axis="y", linestyle="--", alpha=0.7)
 
     for bar, p in zip(bars, param_counts):
         h = bar.get_height()
-        ax_bar.text(bar.get_x() + bar.get_width()/2, h * 1.25, f"{p:,}",
-                    ha="center", va="bottom", fontsize=8.0, fontweight="bold")
+        ax.text(bar.get_x() + bar.get_width()/2, h * 1.25, f"{p:,}",
+                ha="center", va="bottom", fontsize=9.5, fontweight="bold")
 
-    ax_bar.set_ylim(10, 25000)
+    ax.set_ylim(10, 30000)
 
-    # ─────────────────────────────────────────────────────────────────
-    # Panel D: Execution Profile: Classical CPU vs. NISQ Hardware Bounds (Bottom-Right)
-    # ─────────────────────────────────────────────────────────────────
-    ax_box = fig.add_subplot(gs[1, 1])
-    ax_box.axis("off")
+    # Annotation badge highlighting 109x parameter reduction
+    ax.text(0.68, 0.85, "Quantum Parameter Parsimony:\nVQC requires ONLY 38 parameters\nvs MLP with 4,161 weights (109.5× reduction)\nvs Random Forest with 3,328 nodes",
+            transform=ax.transAxes, fontsize=9.2,
+            bbox=dict(boxstyle="round,pad=0.6", facecolor="#ecfdf5", edgecolor="#10b981", linewidth=1.2))
 
-    exec_text = (
-        "┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐\n"
-        "│                          HARDWARE EXECUTION PROFILING & ASYMPTOTIC RESOURCE BOUNDS                     │\n"
-        "├────────────────────────────────────────────────────────────────────────────────────────────────────────┤\n"
-        "│  Metric Domain        │ Classical CPU Benchmarks           │ NISQ Quantum Coprocessor Bounds (Target)  │\n"
-        "├───────────────────────┼────────────────────────────────────┼───────────────────────────────────────────┤\n"
-        "│  State Space Encoding │ O(D) Explicit Floating-Point Array │ O(log₂ D) Hilbert Space Basis Amplitudes  │\n"
-        "│  Active Working Memory│ ~16 KB - 302 KB Serialized Cache   │ 6 Superconducting Transmon Qubits (Wires) │\n"
-        "│  Single-Query Latency │ 0.05 ms (SVM) - 12.86 ms (RF)      │ CPU Sim: 6.29 ms  -->  QPU: ~2.5 µs Pulse  │\n"
-        "│  Microwave Gate Pulses│ N/A (Von Neumann Arithmetic ALU)   │ Single-Qubit: 35 ns, CNOT Entangler: 260 ns│\n"
-        "│  Generalization Gap   │ +6.9% (SVM) up to +25.1% (RF)      │ +4.76% (Unitary Isometry Rotation Bounds) │\n"
-        "│  Storage Compression  │ Baseline Reference (1x to 270x)    │ 665x Smaller Footprint than Random Forest │\n"
-        "└────────────────────────────────────────────────────────────────────────────────────────────────────────┘"
+    fig_png = f"{OUT_DIR}/eval_parameter_parsimony_scaling.png"
+    fig_pdf = f"{OUT_DIR}/eval_parameter_parsimony_scaling.pdf"
+    plt.savefig(fig_png, dpi=300, bbox_inches="tight")
+    plt.savefig(fig_pdf, bbox_inches="tight")
+    plt.close()
+    print(f"  [Saved] {fig_png} and .pdf")
+
+
+def plot_hardware_bounds_standalone():
+    """Figure 4: Standalone Hardware Execution Profile & Quantum Edge Deployment"""
+    print("\n  [4/4] Generating Standalone Hardware Execution Profiling Table...")
+    fig = plt.figure(figsize=(14.0, 3.0))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis("off")
+
+    headers = ["Metric / Architectural Domain", "Classical CPU Execution Benchmark", "NISQ Quantum Hardware Target (Transmon QPU)"]
+    row_data = [
+        ["State Space Encoding", r"$\mathcal{O}(D)$ Explicit Floating-Point Array", r"$\mathcal{O}(\log_2 D)$ Hilbert Basis Amplitudes"],
+        ["Active Working Memory", "~16 KB - 302 KB Serialized Cache", "6 Superconducting Transmon Qubits (Wires)"],
+        ["Single-Query Inference Latency", "0.05 ms (SVM) - 12.86 ms (Random Forest)", r"CPU Sim: 5.62 ms $\rightarrow$ QPU Hardware: ~2.5 µs Pulse"],
+        ["Microwave Gate Durations", "N/A (Von Neumann Arithmetic ALU)", "Single-Qubit: 35 ns, CNOT Entangler: 260 ns"],
+        ["Generalization Gap (Overfit)", "+6.9% (SVM) up to +25.1% (Random Forest)", "+4.76% (Unitary Isometry Rotation Bounds)"],
+        ["Storage Space Compression", "Baseline Reference (1× to 270× footprint)", "665× Smaller Footprint than Random Forest (0.45 KB)"]
+    ]
+
+    all_data = [headers] + row_data
+    col_widths = [0.24, 0.36, 0.40]
+
+    table = ax.table(
+        cellText=all_data,
+        cellLoc="center",
+        loc="center",
+        colWidths=col_widths
     )
+    table.auto_set_font_size(False)
+    table.set_fontsize(9.5)
+    table.scale(1.0, 1.95)
 
-    ax_box.text(0.01, 0.50, exec_text, fontsize=8.3, family="monospace", va="center", ha="left",
-                bbox=dict(boxstyle="round,pad=0.6", facecolor="#f8fafc", edgecolor="#94a3b8", linewidth=1.2))
-    ax_box.set_title("(d) Architectural Execution Profile & Quantum Edge Deployment Feasibility", fontweight="bold", pad=8, fontsize=10.5)
+    for (row_idx, col_idx), cell in table.get_celld().items():
+        cell.set_edgecolor("#94a3b8")
+        cell.set_linewidth(0.9)
+        if row_idx == 0:
+            cell.set_facecolor("#1e293b")
+            cell.set_text_props(color="white", weight="bold", fontsize=10)
+        elif col_idx == 2:
+            cell.set_facecolor("#ecfdf5")
+            cell.set_text_props(color="#065f46", weight="bold")
+        elif row_idx % 2 == 1:
+            cell.set_facecolor("#f8fafc")
+        else:
+            cell.set_facecolor("#ffffff")
 
-    # Use clean IEEE-standard subpanel titles without colliding suptitle
-    fig.subplots_adjust(top=0.93, bottom=0.06, left=0.05, right=0.97, hspace=0.28, wspace=0.22)
+    ax.set_title("Architectural Execution Profile: Classical CPU Benchmarks vs. Physical NISQ QPU Bounds",
+                 fontweight="bold", pad=14, fontsize=12)
 
-    fig_png = f"{OUT_DIR}/eval_computational_complexity_radar_and_table.png"
-    fig_pdf = f"{OUT_DIR}/eval_computational_complexity_radar_and_table.pdf"
-    plt.savefig(fig_png, dpi=300)
-    plt.savefig(fig_pdf)
+    fig_png = f"{OUT_DIR}/eval_hardware_execution_bounds.png"
+    fig_pdf = f"{OUT_DIR}/eval_hardware_execution_bounds.pdf"
+    plt.savefig(fig_png, dpi=300, bbox_inches="tight")
+    plt.savefig(fig_pdf, bbox_inches="tight")
     plt.close()
     print(f"  [Saved] {fig_png} and .pdf")
 
@@ -758,7 +825,10 @@ def main():
 
     # Generate Figures
     plot_time_space_tradeoffs(results)
-    plot_radar_and_complexity_matrix(results)
+    plot_radar_standalone(results)
+    plot_table_standalone(results)
+    plot_parameter_parsimony_standalone(results)
+    plot_hardware_bounds_standalone()
 
     # Save metrics JSON audit log
     json_path = f"{METRICS_DIR}/computational_resource_profiling.json"
