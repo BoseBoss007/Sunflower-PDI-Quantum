@@ -567,26 +567,27 @@ def plot_radar_and_complexity_matrix(results):
     print("  GENERATING FIGURE 2: MULTI-CRITERIA RADAR & ASYMPTOTIC TABLE")
     print("="*70)
 
-    fig = plt.figure(figsize=(15, 6.5))
-    gs = fig.add_gridspec(1, 2, width_ratios=[1.1, 1.3], wspace=0.25)
+    fig = plt.figure(figsize=(16, 9.8))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.15, 0.85], width_ratios=[0.85, 1.35],
+                          top=0.91, bottom=0.07, left=0.05, right=0.97, hspace=0.32, wspace=0.22)
 
     # ─────────────────────────────────────────────────────────────────
-    # Panel A: Radar / Spider Multi-Criteria Performance Chart
+    # Panel A: Radar / Spider Multi-Criteria Performance Chart (Top-Left)
     # ─────────────────────────────────────────────────────────────────
     ax_radar = fig.add_subplot(gs[0, 0], polar=True)
 
     categories = [
         "Classification\nAccuracy",
-        "Storage\nEfficiency\n(1/KB)",
-        "Parameter\nParsimony\n(1/Params)",
-        "Training\nSpeed\n(1/Time)",
-        "Inference\nThroughput\n(1/Latency)"
+        "Storage\nEfficiency",
+        "Parameter\nParsimony",
+        "Training\nSpeed",
+        "Inference\nThroughput"
     ]
     N = len(categories)
     angles = [n / float(N) * 2 * np.pi for n in range(N)]
-    angles += angles[:1] # complete the loop
+    angles += angles[:1]
 
-    # Normalize metrics to [0.1, 1.0] scale
+    # Normalize metrics to [0.15, 1.0] scale
     accs = [r["test_acc"] for r in results]
     sizes = [1.0 / r["size_kb"] for r in results]
     params = [1.0 / np.log10(max(r["params"], 2)) for r in results]
@@ -603,7 +604,6 @@ def plot_radar_and_complexity_matrix(results):
     norm_t_speeds = normalize(t_speeds)
     norm_lat_speeds = normalize(lat_speeds)
 
-    # Highlight 4 representative models on radar to maintain crisp visual clarity
     selected = [
         ("Random Forest", "Random Forest", "#ef4444", "--"),
         ("SVM (RBF Kernel)", "Support Vector", "#10b981", "-."),
@@ -615,71 +615,133 @@ def plot_radar_and_complexity_matrix(results):
         idx = next(i for i, r in enumerate(results) if kw in r["full_name"])
         vals = [norm_accs[idx], norm_sizes[idx], norm_params[idx], norm_t_speeds[idx], norm_lat_speeds[idx]]
         vals += vals[:1]
-        lw = 2.6 if "Amplitude" in model_name else 1.8
-        alpha = 0.25 if "Amplitude" in model_name else 0.08
+        lw = 2.4 if "Amplitude" in model_name else 1.8
+        alpha = 0.22 if "Amplitude" in model_name else 0.06
         ax_radar.plot(angles, vals, color=col, linewidth=lw, linestyle=lstyle, label=model_name)
         ax_radar.fill(angles, vals, color=col, alpha=alpha)
 
     ax_radar.set_xticks(angles[:-1])
-    ax_radar.set_xticklabels(categories, fontsize=9.0, fontweight="bold")
+    ax_radar.set_xticklabels(categories, fontsize=8.5, fontweight="bold")
     ax_radar.set_ylim(0, 1.05)
-    ax_radar.set_title("(a) Multi-Criteria Architectural Efficiency Radar", fontweight="bold", pad=18)
-    ax_radar.legend(loc="upper right", bbox_to_anchor=(1.35, 1.12), fontsize=8.5, framealpha=0.95)
+    ax_radar.set_title("(a) Multi-Criteria Architectural Efficiency Radar", fontweight="bold", pad=12, fontsize=10.5)
+    ax_radar.legend(loc="upper center", bbox_to_anchor=(0.5, -0.10), ncol=2, fontsize=8.0, framealpha=0.95)
 
     # ─────────────────────────────────────────────────────────────────
-    # Panel B: Asymptotic Algorithmic Complexity & Empirical Metrics Table
+    # Panel B: Asymptotic & Empirical Complexity Table (Top-Right)
     # ─────────────────────────────────────────────────────────────────
     ax_tab = fig.add_subplot(gs[0, 1])
     ax_tab.axis("off")
 
     table_data = [
-        ["Model Architecture", "Params", "Disk Size", "Train Time", "Latency", "Test Acc", "Space Complexity"],
+        ["Model Architecture", "Parameters", "Disk Storage", "Train Time", "Latency", "Test Acc", "Space Complexity"],
     ]
 
+    clean_names = {
+        "Logistic Regression (SGD)": "Logistic Regression (SGD)",
+        "Support Vector Machine (RBF)": "SVM (RBF Kernel)",
+        "Random Forest Ensemble (150 Trees)": "Random Forest (150 Trees)",
+        "XGBoost Gradient Boosting": "XGBoost (60 Rounds)",
+        "Multi-Layer Perceptron (64-32)": "Neural Net (MLP 64-32)",
+        "Method 1: Angle-Encoded VQC (PCA 6-D)": "Method 1: Angle VQC (PCA 6-D)",
+        "Method 2: Amplitude-Encoded VQC (Hilbert 64-D)": "Method 2: Amplitude VQC (64-D)"
+    }
+
     for r in results:
-        # Format values cleanly
+        disp_name = clean_names.get(r["full_name"], r["full_name"])
         p_str = f"{r['params']:,}"
         s_str = f"{r['size_kb']:.2f} KB" if r['size_kb'] < 1000 else f"{r['size_kb']/1024:.2f} MB"
         t_str = f"{r['train_time_s']*1000:.0f} ms" if r['train_time_s'] < 1.0 else f"{r['train_time_s']:.2f} s"
         l_str = f"{r['latency_ms']:.2f} ms"
         a_str = f"{r['test_acc']:.2f}%"
         table_data.append([
-            r["full_name"], p_str, s_str, t_str, l_str, a_str, r["complexity_space"]
+            disp_name, p_str, s_str, t_str, l_str, a_str, r["complexity_space"]
         ])
+
+    col_widths = [0.26, 0.10, 0.12, 0.12, 0.13, 0.11, 0.16]
 
     table = ax_tab.table(
         cellText=table_data,
         cellLoc="center",
         loc="center",
-        colWidths=[0.32, 0.12, 0.14, 0.14, 0.12, 0.13, 0.18]
+        colWidths=col_widths
     )
     table.auto_set_font_size(False)
     table.set_fontsize(8.5)
     table.scale(1.0, 1.85)
 
-    # Style header row
-    for col_idx in range(len(table_data[0])):
-        cell = table[(0, col_idx)]
-        cell.set_facecolor("#1e293b")
-        cell.set_text_props(color="white", weight="bold")
-
-    # Highlight Quantum Method 2 row
     m2_row_idx = len(table_data) - 1
-    for col_idx in range(len(table_data[0])):
-        cell = table[(m2_row_idx, col_idx)]
-        cell.set_facecolor("#ecfdf5")
-        cell.set_text_props(color="#065f46", weight="bold")
+    for (row_idx, col_idx), cell in table.get_celld().items():
+        cell.set_edgecolor("#cbd5e1")
+        cell.set_linewidth(0.8)
+        if row_idx == 0:
+            cell.set_facecolor("#1e293b")
+            cell.set_text_props(color="white", weight="bold")
+        elif row_idx == m2_row_idx:
+            cell.set_facecolor("#ecfdf5")
+            cell.set_text_props(color="#065f46", weight="bold")
+        elif row_idx == m2_row_idx - 1:
+            cell.set_facecolor("#f0f9ff")
+            cell.set_text_props(color="#0369a1", weight="bold")
+        elif row_idx % 2 == 1:
+            cell.set_facecolor("#f8fafc")
+        else:
+            cell.set_facecolor("#ffffff")
 
-    ax_tab.set_title("(b) Empirical Time, Space, and Asymptotic Complexity Benchmark", fontweight="bold", pad=12)
+    ax_tab.set_title("(b) Empirical Time, Space, and Asymptotic Complexity Benchmark", fontweight="bold", pad=12, fontsize=10.5)
 
-    fig.suptitle("Comparative Computational Complexity: Space, Time, and Memory Scaling Across Models",
-                 fontweight="bold", y=0.98, fontsize=13)
+    # ─────────────────────────────────────────────────────────────────
+    # Panel C: Parameter Parsimony & Storage Compression Ratio (Bottom-Left)
+    # ─────────────────────────────────────────────────────────────────
+    ax_bar = fig.add_subplot(gs[1, 0])
+    model_labels = ["LR", "SVM", "RF", "XGB", "MLP", "VQC M1", "VQC M2"]
+    param_counts = [r["params"] for r in results]
+    bar_colors = [r["color"] for r in results]
 
-    plt.tight_layout()
+    bars = ax_bar.bar(model_labels, param_counts, color=bar_colors, width=0.55, edgecolor="#1e293b", linewidth=0.9)
+    ax_bar.set_yscale("log")
+    ax_bar.set_ylabel("Trainable Parameters (Log Scale)", fontsize=9.5)
+    ax_bar.set_title("(c) Trainable Parameter Count & Parsimony Scaling", fontweight="bold", pad=8, fontsize=10.5)
+    ax_bar.grid(True, axis="y")
+
+    for bar, p in zip(bars, param_counts):
+        h = bar.get_height()
+        ax_bar.text(bar.get_x() + bar.get_width()/2, h * 1.25, f"{p:,}",
+                    ha="center", va="bottom", fontsize=8.0, fontweight="bold")
+
+    ax_bar.set_ylim(10, 25000)
+
+    # ─────────────────────────────────────────────────────────────────
+    # Panel D: Execution Profile: Classical CPU vs. NISQ Hardware Bounds (Bottom-Right)
+    # ─────────────────────────────────────────────────────────────────
+    ax_box = fig.add_subplot(gs[1, 1])
+    ax_box.axis("off")
+
+    exec_text = (
+        "┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐\n"
+        "│                          HARDWARE EXECUTION PROFILING & ASYMPTOTIC RESOURCE BOUNDS                     │\n"
+        "├────────────────────────────────────────────────────────────────────────────────────────────────────────┤\n"
+        "│  Metric Domain        │ Classical CPU Benchmarks           │ NISQ Quantum Coprocessor Bounds (Target)  │\n"
+        "├───────────────────────┼────────────────────────────────────┼───────────────────────────────────────────┤\n"
+        "│  State Space Encoding │ O(D) Explicit Floating-Point Array │ O(log₂ D) Hilbert Space Basis Amplitudes  │\n"
+        "│  Active Working Memory│ ~16 KB - 302 KB Serialized Cache   │ 6 Superconducting Transmon Qubits (Wires) │\n"
+        "│  Single-Query Latency │ 0.05 ms (SVM) - 12.86 ms (RF)      │ CPU Sim: 6.29 ms  -->  QPU: ~2.5 µs Pulse  │\n"
+        "│  Microwave Gate Pulses│ N/A (Von Neumann Arithmetic ALU)   │ Single-Qubit: 35 ns, CNOT Entangler: 260 ns│\n"
+        "│  Generalization Gap   │ +6.9% (SVM) up to +25.1% (RF)      │ +4.76% (Unitary Isometry Rotation Bounds) │\n"
+        "│  Storage Compression  │ Baseline Reference (1x to 270x)    │ 665x Smaller Footprint than Random Forest │\n"
+        "└────────────────────────────────────────────────────────────────────────────────────────────────────────┘"
+    )
+
+    ax_box.text(0.01, 0.50, exec_text, fontsize=8.3, family="monospace", va="center", ha="left",
+                bbox=dict(boxstyle="round,pad=0.6", facecolor="#f8fafc", edgecolor="#94a3b8", linewidth=1.2))
+    ax_box.set_title("(d) Architectural Execution Profile & Quantum Edge Deployment Feasibility", fontweight="bold", pad=8, fontsize=10.5)
+
+    # Use clean IEEE-standard subpanel titles without colliding suptitle
+    fig.subplots_adjust(top=0.93, bottom=0.06, left=0.05, right=0.97, hspace=0.28, wspace=0.22)
+
     fig_png = f"{OUT_DIR}/eval_computational_complexity_radar_and_table.png"
     fig_pdf = f"{OUT_DIR}/eval_computational_complexity_radar_and_table.pdf"
-    plt.savefig(fig_png, dpi=300, bbox_inches="tight")
-    plt.savefig(fig_pdf, bbox_inches="tight")
+    plt.savefig(fig_png, dpi=300)
+    plt.savefig(fig_pdf)
     plt.close()
     print(f"  [Saved] {fig_png} and .pdf")
 
