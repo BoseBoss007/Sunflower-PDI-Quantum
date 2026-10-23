@@ -1,0 +1,93 @@
+[
+  {
+    "name": "Logistic\nRegression",
+    "full_name": "Logistic Regression (SGD)",
+    "family": "Classical Linear",
+    "params": 32,
+    "size_kb": 1.119140625,
+    "train_time_s": 0.001405954360961914,
+    "latency_ms": 0.06431248039007187,
+    "test_acc": 93.93939393939394,
+    "color": "#3b82f6",
+    "complexity_space": "O(D)",
+    "complexity_time": "O(N \u00b7 D)"
+  },
+  {
+    "name": "SVM\n(RBF Kernel)",
+    "full_name": "Support Vector Machine (RBF)",
+    "family": "Classical Kernel",
+    "params": 1921,
+    "size_kb": 16.873046875,
+    "train_time_s": 0.0015399456024169922,
+    "latency_ms": 0.05133304512128234,
+    "test_acc": 90.9090909090909,
+    "color": "#10b981",
+    "complexity_space": "O(N_sv \u00b7 D)",
+    "complexity_time": "O(N^2 \u00b7 D)"
+  },
+  {
+    "name": "Random\nForest",
+    "full_name": "Random Forest Ensemble (150 Trees)",
+    "family": "Classical Ensemble",
+    "params": 3328,
+    "size_kb": 302.2392578125,
+    "train_time_s": 0.14175796508789062,
+    "latency_ms": 12.860041460953653,
+    "test_acc": 90.9090909090909,
+    "color": "#ef4444",
+    "complexity_space": "O(T \u00b7 Nodes)",
+    "complexity_time": "O(T \u00b7 N \u00b7 D log N)"
+  },
+  {
+    "name": "XGBoost\nTrees",
+    "full_name": "XGBoost Gradient Boosting",
+    "family": "Classical Boosting",
+    "params": 682,
+    "size_kb": 71.9443359375,
+    "train_time_s": 0.0685722827911377,
+    "latency_ms": 0.14766649110242724,
+    "test_acc": 93.93939393939394,
+    "color": "#f59e0b",
+    "complexity_space": "O(T \u00b7 Depth)",
+    "complexity_time": "O(T \u00b7 N \u00b7 D)"
+  },
+  {
+    "name": "Neural Net\n(MLP 64-32)",
+    "full_name": "Multi-Layer Perceptron (64-32)",
+    "family": "Classical Neural",
+    "params": 4161,
+    "size_kb": 135.4609375,
+    "train_time_s": 0.018938302993774414,
+    "latency_ms": 0.08543755393475294,
+    "test_acc": 93.93939393939394,
+    "color": "#8b5cf6",
+    "complexity_space": "O(H_1 \u00b7 H_2)",
+    "complexity_time": "O(E \u00b7 N \u00b7 W)"
+  },
+  {
+    "name": "Method 1\n(Angle VQC)",
+    "full_name": "Method 1: Angle-Encoded VQC (PCA 6-D)",
+    "family": "Quantum Variational",
+    "params": 38,
+    "size_kb": 0.4541015625,
+    "train_time_s": 48.2,
+    "latency_ms": 6.624125060625374,
+    "test_acc": 81.82,
+    "color": "#0284c7",
+    "complexity_space": "O(n) Qubits",
+    "complexity_time": "O(E \u00b7 B \u00b7 L \u00b7 n)"
+  },
+  {
+    "name": "Method 2\n(Amplitude VQC)",
+    "full_name": "Method 2: Amplitude-Encoded VQC (Hilbert 64-D)",
+    "family": "Quantum Variational",
+    "params": 38,
+    "size_kb": 0.4541015625,
+    "train_time_s": 52.4,
+    "latency_ms": 6.292062462307513,
+    "test_acc": 84.85,
+    "color": "#059669",
+    "complexity_space": "O(log_2 D) Qubits",
+    "complexity_time": "O(E \u00b7 B \u00b7 L \u00b7 n)"
+  }
+]
