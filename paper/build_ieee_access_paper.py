@@ -48,6 +48,7 @@ def set_columns(section, number, space_twips="400"):
         sect_pr.append(cols)
     cols.set(qn("w:num"), str(number))
     cols.set(qn("w:space"), str(space_twips))
+    cols.set(qn("w:equalWidth"), "1")
 
 
 def add_para(doc, text, style="PARA", bold_lead=None, italic=False, space_after=3):
@@ -55,6 +56,11 @@ def add_para(doc, text, style="PARA", bold_lead=None, italic=False, space_after=
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(space_after)
     p.paragraph_format.line_spacing = 1.05
+    p.paragraph_format.right_indent = Pt(0)
+    pPr = p._p.get_or_add_pPr()
+    ind = pPr.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind")
+    if ind is not None and "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right" in ind.attrib:
+        del ind.attrib["{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right"]
     if bold_lead and text.startswith(bold_lead):
         r_lead = p.add_run(bold_lead)
         r_lead.bold = True
@@ -239,6 +245,16 @@ def build_manuscript():
     doc = Document(str(TEMPLATE))
     clear_body(doc)
 
+    # Sanitize template styles to remove unwanted right indents in two-column layout
+    for s_name in ["Abstract", "IT", "PARA", "PARA_Indent"]:
+        if s_name in doc.styles:
+            st = doc.styles[s_name]
+            pPr = st.element.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr")
+            if pPr is not None:
+                ind = pPr.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind")
+                if ind is not None and "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right" in ind.attrib:
+                    del ind.attrib["{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right"]
+
     sec0 = doc.sections[0]
     sec0.top_margin = Inches(0.75)
     sec0.bottom_margin = Inches(0.75)
@@ -289,6 +305,12 @@ def build_manuscript():
 
     # Abstract & Keywords
     p_abs = doc.add_paragraph(style="Abstract")
+    p_abs.paragraph_format.left_indent = Pt(0)
+    p_abs.paragraph_format.right_indent = Pt(0)
+    pPr_abs = p_abs._p.get_or_add_pPr()
+    ind_abs = pPr_abs.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind")
+    if ind_abs is not None and "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right" in ind_abs.attrib:
+        del ind_abs.attrib["{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right"]
     r_ab_lead = p_abs.add_run("ABSTRACT  ")
     r_ab_lead.bold = True
     p_abs.add_run(
@@ -318,6 +340,12 @@ def build_manuscript():
     p_abs.paragraph_format.space_after = Pt(6)
 
     p_kw = doc.add_paragraph(style="IT")
+    p_kw.paragraph_format.left_indent = Pt(0)
+    p_kw.paragraph_format.right_indent = Pt(0)
+    pPr_kw = p_kw._p.get_or_add_pPr()
+    ind_kw = pPr_kw.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ind")
+    if ind_kw is not None and "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right" in ind_kw.attrib:
+        del ind_kw.attrib["{http://schemas.openxmlformats.org/wordprocessingml/2006/main}right"]
     r_kw_lead = p_kw.add_run("INDEX TERMS  ")
     r_kw_lead.bold = True
     p_kw.add_run(
