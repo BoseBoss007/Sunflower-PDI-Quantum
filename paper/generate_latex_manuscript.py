@@ -134,10 +134,24 @@ GrabCut minimizes Gibbs energy over foreground/background GMMs:
 \begin{equation}
 E(\underline{\alpha}, \mathbf{k}, \underline{\theta}, \mathbf{z}) = \sum_n U(\alpha_n, k_n, \underline{\theta}, z_n) + \sum_{(m,n) \in \mathcal{C}} V(\alpha_m, \alpha_n, \mathbf{z}),
 \end{equation}
-followed by $K$-means clustering ($k=3$) to extract the darkest central floret disc mask.
+followed by $K$-means clustering ($k=3$) to extract the darkest central floret disc mask, as illustrated in Fig.~\ref{fig:pipeline}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{Fig1_image_segmentation_pipeline.png}
+\caption{End-to-end Digital Image Processing (DIP) and dual-stage segmentation pipeline across five growth stages: (a) Input raw field image, (b) Saturation channel map, (c) GrabCut foreground mask, (d) $K$-means central floret disc isolation, and (e) Segmented morphological contour overlay.}
+\label{fig:pipeline}
+\end{figure*}
 
 \subsection{31 Multi-Domain Non-Circular Botanical Descriptors}
-Table~\ref{tab:feature_specifications} details the complete 31-dimensional non-circular feature space across Morphological Shape (3), Disc Geometry (2), HSV Histograms (22), and GLCM Textures (4).
+Table~\ref{tab:feature_specifications} details the complete 31-dimensional non-circular feature space across Morphological Shape (3), Disc Geometry (2), HSV Histograms (22), and GLCM Textures (4). The pairwise Pearson cross-correlation structure is depicted in full page width in Fig.~\ref{fig:correlation}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{Fig2_feature_correlation_heatmap.png}
+\caption{Cross-correlation matrix heatmap across the 31 non-circular botanical features, identifying orthogonal morphological, spectral, and textural clusters.}
+\label{fig:correlation}
+\end{figure*}
 
 \begin{table*}[t]
 \caption{Complete Specification of 31 Multi-Domain Non-Circular Botanical Features}

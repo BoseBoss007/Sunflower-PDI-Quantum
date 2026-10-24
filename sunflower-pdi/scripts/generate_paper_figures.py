@@ -97,9 +97,9 @@ feat_cols = [c for c in df.columns if c not in EXCLUDE]
 # FIGURE 1: IMAGE PROCESSING & MULTI-STAGE SEGMENTATION PIPELINE
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_fig1():
-    print("\n[Fig 1] Generating Image Processing & Segmentation Pipeline...")
+    print("\n[Fig 1] Generating Large-Scale Image Processing & Segmentation Pipeline...")
     stages = ["Healthy", "EarlyBloom", "MatureBud", "YoungBud", "Wilted"]
-    fig, axes = plt.subplots(len(stages), 5, figsize=(13, 11))
+    fig, axes = plt.subplots(len(stages), 5, figsize=(15, 13.5))
     
     for row, stage in enumerate(stages):
         img_dir = f"/Users/ramit071/Sunflower PDI Qunatum Project/Sunflower Compressed/{stage}"
@@ -110,33 +110,33 @@ def generate_fig1():
         
         bgr = cv2.imread(sample_path)
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        rgb = cv2.resize(rgb, (224, 224), interpolation=cv2.INTER_AREA)
+        rgb = cv2.resize(rgb, (300, 300), interpolation=cv2.INTER_AREA)
         
         # 1. Raw Image
         axes[row, 0].imshow(rgb)
-        axes[row, 0].set_ylabel(stage, fontsize=11, fontweight='bold')
-        if row == 0: axes[row, 0].set_title("(a) Raw Image", fontsize=11, pad=8)
+        axes[row, 0].set_ylabel(stage, fontsize=13, fontweight='bold', labelpad=8)
+        if row == 0: axes[row, 0].set_title("(a) Raw Field Image", fontsize=13, fontweight='bold', pad=10)
         axes[row, 0].set_xticks([]); axes[row, 0].set_yticks([])
         
         # 2. HSV Color Space Representation
         hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
         axes[row, 1].imshow(hsv[:, :, 1], cmap="cividis") # saturation map
-        if row == 0: axes[row, 1].set_title("(b) Saturation Map", fontsize=11, pad=8)
+        if row == 0: axes[row, 1].set_title("(b) Saturation Channel", fontsize=13, fontweight='bold', pad=10)
         axes[row, 1].set_xticks([]); axes[row, 1].set_yticks([])
         
         # 3. GrabCut Foreground Mask
         mask = np.zeros(rgb.shape[:2], np.uint8)
-        rect = (15, 15, 194, 194)
+        rect = (20, 20, 260, 260)
         bgdModel = np.zeros((1, 65), np.float64)
         fgdModel = np.zeros((1, 65), np.float64)
         try:
-            cv2.grabCut(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), mask, rect, bgdModel, fgdModel, 3, cv2.GC_INIT_WITH_RECT)
+            cv2.grabCut(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), mask, rect, bgdModel, fgdModel, 4, cv2.GC_INIT_WITH_RECT)
             fg = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
         except Exception:
             fg = np.ones(rgb.shape[:2], np.uint8) * 255
             
         axes[row, 2].imshow(fg, cmap="gray")
-        if row == 0: axes[row, 2].set_title("(c) GrabCut Mask", fontsize=11, pad=8)
+        if row == 0: axes[row, 2].set_title("(c) GrabCut Mask", fontsize=13, fontweight='bold', pad=10)
         axes[row, 2].set_xticks([]); axes[row, 2].set_yticks([])
         
         # 4. Central Disc K-Means Mask
@@ -149,21 +149,21 @@ def generate_fig1():
             darkest_cluster = np.argmin(centers.mean(axis=1))
             disc_idx = np.where(lbl.flatten() == darkest_cluster)[0]
             disc_mask[ys[disc_idx], xs[disc_idx]] = 255
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
             disc_mask = cv2.morphologyEx(disc_mask, cv2.MORPH_CLOSE, kernel)
             
         axes[row, 3].imshow(disc_mask, cmap="magma")
-        if row == 0: axes[row, 3].set_title("(d) Disc Isolation", fontsize=11, pad=8)
+        if row == 0: axes[row, 3].set_title("(d) Disc Isolation", fontsize=13, fontweight='bold', pad=10)
         axes[row, 3].set_xticks([]); axes[row, 3].set_yticks([])
         
         # 5. Segmented Overlay with Morphological Contours
         overlay = rgb.copy()
         contours_fg, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contours_disc, _ = cv2.findContours(disc_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(overlay, contours_fg, -1, (0, 255, 0), 2)     # Green = Flower boundary
-        cv2.drawContours(overlay, contours_disc, -1, (255, 0, 0), 2)   # Red = Disc boundary
+        cv2.drawContours(overlay, contours_fg, -1, (0, 255, 0), 3)     # Green = Flower boundary (thicker)
+        cv2.drawContours(overlay, contours_disc, -1, (255, 0, 0), 3)   # Red = Disc boundary (thicker)
         axes[row, 4].imshow(overlay)
-        if row == 0: axes[row, 4].set_title("(e) Contour Overlay", fontsize=11, pad=8)
+        if row == 0: axes[row, 4].set_title("(e) Contour Overlay", fontsize=13, fontweight='bold', pad=10)
         axes[row, 4].set_xticks([]); axes[row, 4].set_yticks([])
 
     plt.tight_layout()
@@ -173,7 +173,7 @@ def generate_fig1():
 # FIGURE 2: BOTANICAL FEATURE CORRELATION MATRIX
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_fig2():
-    print("[Fig 2] Generating Botanical Feature Correlation Heatmap...")
+    print("[Fig 2] Generating Large-Scale Botanical Feature Correlation Heatmap...")
     corr_df = df[feat_cols].copy()
     
     # Rename features cleanly for paper readability
@@ -181,13 +181,19 @@ def generate_fig2():
     corr_df.columns = clean_names
     corr_mat = corr_df.corr(method="pearson")
     
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(14.5, 12.5))
     mask = np.triu(np.ones_like(corr_mat, dtype=bool))
     cmap = sns.diverging_palette(230, 20, as_cmap=True)
     
-    sns.heatmap(corr_mat, mask=mask, cmap=cmap, vmin=-1.0, vmax=1.0, center=0,
-                square=True, linewidths=0.5, cbar_kws={"shrink": 0.8, "label": "Pearson Correlation Coefficient (r)"}, ax=ax)
-    ax.set_title("Pairwise Pearson Correlation Matrix of Extracted Botanical Features (N = 1,500)", fontsize=13, pad=12, fontweight='bold')
+    heatmap = sns.heatmap(corr_mat, mask=mask, cmap=cmap, vmin=-1.0, vmax=1.0, center=0,
+                square=True, linewidths=0.6, linecolor="#cbd5e1",
+                cbar_kws={"shrink": 0.82, "label": "Pearson Correlation Coefficient (r)"}, ax=ax)
+    
+    ax.figure.axes[-1].yaxis.label.set_size(12.5)
+    ax.figure.axes[-1].yaxis.label.set_weight('bold')
+    ax.set_xticklabels(ax.get_xticklabels(), fontsize=10, rotation=45, ha='right', fontweight='bold')
+    ax.set_yticklabels(ax.get_yticklabels(), fontsize=10, fontweight='bold')
+    ax.set_title("Pairwise Pearson Correlation Matrix of Extracted Botanical Features (N = 1,500)", fontsize=14.5, pad=15, fontweight='bold')
     plt.tight_layout()
     save_fig(fig, "Fig2_feature_correlation_heatmap")
 

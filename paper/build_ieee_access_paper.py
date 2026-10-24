@@ -117,6 +117,33 @@ def add_figure_with_description(doc, img_path, fig_num, caption_text, descriptio
         print(f"  [WARNING] Image not found: {img_path}")
 
 
+def add_full_width_figure(doc, img_path, fig_num, caption_text, description_text, width=Inches(7.15)):
+    s_wide = doc.add_section(WD_SECTION.CONTINUOUS)
+    set_columns(s_wide, 1)
+
+    if Path(img_path).exists():
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(8)
+        p_img.paragraph_format.space_after = Pt(4)
+        run_img = p_img.add_run()
+        run_img.add_picture(str(img_path), width=width)
+
+        p_cap = doc.add_paragraph(f"Fig. {fig_num}. {caption_text}", style="Figure Caption")
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_before = Pt(2)
+        p_cap.paragraph_format.space_after = Pt(6)
+
+        p_desc = doc.add_paragraph(f"Detailed description of Fig. {fig_num}: {description_text}", style="PARA")
+        p_desc.paragraph_format.space_before = Pt(2)
+        p_desc.paragraph_format.space_after = Pt(8)
+    else:
+        print(f"  [WARNING] Full-width image not found: {img_path}")
+
+    s_two = doc.add_section(WD_SECTION.CONTINUOUS)
+    set_columns(s_two, 2, "400")
+
+
 def style_table(table, col_widths):
     tblPr = table._tbl.tblPr
     tblCellMar = OxmlElement("w:tblCellMar")
@@ -476,7 +503,7 @@ def build_manuscript():
         bold_lead="In agricultural field photography",
     )
 
-    add_figure_with_description(
+    add_full_width_figure(
         doc,
         FIG_DIR / "Fig1_image_segmentation_pipeline.png",
         1,
@@ -488,7 +515,7 @@ def build_manuscript():
         "subtle floret textures in shaded floral regions. In step (c), bilateral filtering smooths high-frequency soil clutter while preserving petal edges. "
         "Step (d) displays the GrabCut segmentation mask, which isolates the complete flower head (foreground ratio 0.08 to 0.47). Step (e) presents the darkest "
         "K-means cluster (k=3), cleanly segmenting the central tubular floret disc (disc ratio 0.12 to 0.21). Finally, step (f) shows the composite overlay.",
-        width=Inches(3.35)
+        width=Inches(7.15)
     )
 
     add_para(
@@ -553,7 +580,7 @@ def build_manuscript():
         style="PARA",
     )
 
-    add_figure_with_description(
+    add_full_width_figure(
         doc,
         FIG_DIR / "Fig2_feature_correlation_heatmap.png",
         2,
@@ -562,7 +589,7 @@ def build_manuscript():
         "the geometric shape block (flower_area and perimeter). The HSV histogram bins exhibit localized anti-correlations between yellow hues (bins 1-2) and wilted brownish hues "
         "(bins 6-7). Crucially, the GLCM texture descriptors show very weak correlation (|r| < 0.20) with both geometric shape and color histograms, demonstrating that texture "
         "supplies orthogonal discriminative information that cannot be inferred from color or shape alone.",
-        width=Inches(3.35)
+        width=Inches(7.15)
     )
 
     add_para(
